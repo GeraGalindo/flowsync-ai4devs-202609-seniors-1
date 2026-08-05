@@ -12,43 +12,25 @@ Trabajas sobre **tu fork**, no sobre el repositorio del curso: aquí vas a crear
 # 2. Clona TU fork y añade el del curso como "upstream"
 git clone git@github.com:<tu-usuario>/flowsync-ai4devs.git
 cd flowsync-ai4devs
-git remote add upstream git@github.com:LIDR-academy/flowsync-ai4devs.git
-git remote -v          # origin = tu fork, upstream = el del curso
-
-# 3. Colócate en la rama de partida
-git fetch upstream
-git checkout -b s1/start upstream/s1/start
-git push -u origin s1/start
+git checkout s2/start   # o la rama del módulo que estés cursando (te la indica el prework)
 ```
 
 > Si te sale `Permission denied (publickey)`, es SSH y no el fork. O subes una clave a tu cuenta de GitHub, o cambias las dos URLs por su versión HTTPS. Si el `clone` falla por otra cosa, avisa a tu TA.
 
-## Backend (`backend/`)
+## Arrancar la app
+
+El repo trae un `Makefile` con los atajos de desarrollo (nace en el Módulo 1). Con dos comandos tienes todo en marcha:
 
 ```bash
-cd backend
-npm install
-cp .env.example .env
-node ace generate:key
-node ace migration:run
-npm run dev
+make setup   # solo la primera vez: instala deps, crea los .env y migra
+make start   # levanta backend (:3333) y frontend (:5173) a la vez
 ```
 
-Arranca en `http://localhost:3333`.
+`make start` arranca los dos servidores juntos; `Ctrl-C` los para. `make help` lista todos los targets.
 
-## Frontend (`frontend/`)
+- Backend en `http://localhost:3333`.
+- Frontend en `http://localhost:5173`. Apunta al backend por defecto; para cambiarlo, ajusta `VITE_API_URL` en `frontend/.env`.
 
-Abre otra terminal en la raíz del repo (el backend se queda corriendo en la primera):
+> ¿Prefieres arrancar a mano, sin `make`? Los pasos por servidor (`npm install`, `.env`, migraciones, `npm run dev`) están en el Módulo 1 del asíncrono del curso.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Arranca en `http://localhost:5173`.
-
-Apunta al backend de `http://localhost:3333` por defecto. Para cambiarlo, copia
-`.env.example` a `.env` y ajusta `VITE_API_URL`.
-
-Las instrucciones completas de prework (checklist + priming) están en el Módulo 1 del asíncrono del curso.
+Las instrucciones completas de prework (checklist + priming) están en el asíncrono del curso.

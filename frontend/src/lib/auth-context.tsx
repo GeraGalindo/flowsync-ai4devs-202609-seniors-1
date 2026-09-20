@@ -39,8 +39,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(profile)
         setStatus("signed-in")
       })
-      .catch(() => {
-        localStorage.removeItem(TOKEN_STORAGE_KEY)
+      .catch((err) => {
+        // Only drop the token when the backend actually rejected it (e.g. a
+        // revoked/expired token). A network/server error shouldn't sign the
+        // user out of a session that may still be valid once it recovers.
+        if (err instanceof api.ApiError) {
+          localStorage.removeItem(TOKEN_STORAGE_KEY)
+        }
         setStatus("signed-out")
       })
   }, [])

@@ -14,7 +14,7 @@ export function ProfilePage() {
               {user?.initials}
             </div>
             <div>
-              <CardTitle>{user?.fullName ?? user?.email}</CardTitle>
+              <CardTitle>{user?.fullName || user?.email}</CardTitle>
               <CardDescription>{user?.email}</CardDescription>
             </div>
           </div>

@@ -33,6 +33,8 @@ There is also `GET /` → `{ "hello": "world" }`.
 - `password`: 8–32 characters on signup; `passwordConfirmation` must match it. On login the password only has to be a string.
 - `fullName`: string or `null`. The key must always be sent.
 
+Before VineJS runs, the body parser (`config/bodyparser.ts`: `trimWhitespaces`, `convertEmptyStringsToNull`) trims every string and turns empty strings into `null`. So a password of only spaces fails as `required`, not `minLength`. A `fullName` of only spaces is saved as `null`.
+
 **Error responses:**
 
 - `422` — validation errors, as `{ errors: [{ message, rule, field, meta }] }`.
@@ -51,7 +53,7 @@ There is also `GET /` → `{ "hello": "world" }`.
 - **Routes** (`src/routes/app-routes.tsx`):
   - `/login` and `/register` are public-only: a logged-in user is redirected away.
   - `/profile` is protected: a user who is not logged in is sent to `/login`.
-  - Any other path redirects to `/profile`.
+  - Any other path redirects to `/profile`. For a user who is not logged in, that means a second redirect to `/login`.
 - **Session** (`src/auth/auth-provider.tsx`):
   - The token is stored in `localStorage` under `flowsync.token`.
   - On app start the token is checked with `GET /account/profile`. It is thrown away if that call returns 401.

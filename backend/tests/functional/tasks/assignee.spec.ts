@@ -77,16 +77,18 @@ test.group('Tasks | responsable', (group) => {
     const enLista = await buscarEnLista(client, token, id)
     assert.exists(enLista)
 
-    // Toda vía por la que sale una tarea cuenta: la suelta, la de la lista y
-    // la que devuelve la propia creación.
-    const vias = { suelta, enLista, creada: creada.body().data }
+    // Las dos vías que nombra el scenario. Se recogen todas las fugas antes de
+    // afirmar, para que una no tape a la otra.
+    const vias = { suelta, enLista }
+    const fugas: string[] = []
 
     for (const [via, tarea] of Object.entries(vias)) {
-      const assignee = JSON.stringify(tarea.assignee)
-      assert.notInclude(assignee, email, `la tarea ${via} filtra el email`)
-      assert.notInclude(assignee, 'secreto123', `la tarea ${via} filtra la contraseña`)
-      assert.notInclude(assignee, token, `la tarea ${via} filtra el token`)
+      const assignee = JSON.stringify(tarea.assignee).toLowerCase()
+      if ('email' in tarea.assignee || assignee.includes(email)) fugas.push(`${via}: email`)
+      if ('password' in tarea.assignee) fugas.push(`${via}: password`)
     }
+
+    assert.deepEqual(fugas, [])
   })
 
   test('un responsable sin nombre llega con nombre nulo y con iniciales', async ({

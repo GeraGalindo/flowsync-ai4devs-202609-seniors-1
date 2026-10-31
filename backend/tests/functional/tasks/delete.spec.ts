@@ -6,7 +6,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 /**
  * `DELETE /api/v1/tasks/:id`. La spec viva todavía no tiene requisito para el
  * borrado: estos tests cubren el contrato del endpoint y los criterios CA-2,
- * CA-3 y CA-10 de `docs/backlog/E2-gestion-tareas/us-borrar-tarea.md`.
+ * CA-3, CA-10 y CA-11 de `docs/backlog/E2-gestion-tareas/us-borrar-tarea.md`.
  */
 test.group('Tasks | borrar', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -93,4 +93,20 @@ test.group('Tasks | borrar', (group) => {
 
     response.assertStatus(404)
   })
+
+  for (const sufijo of ['.0', 'e0', '%20']) {
+    test('un identificador que solo parece el de la tarea ({$self}) no la borra')
+      .with([sufijo])
+      .run(async ({ client, assert }, sufijoDelId) => {
+        const { user, bearer } = await cuenta('ada@example.com')
+        const task = await Task.create({ title: 'Sigue', status: 'pending', assigneeId: user.id })
+
+        const response = await client
+          .delete(`/api/v1/tasks/${task.id}${sufijoDelId}`)
+          .header('Authorization', bearer)
+
+        response.assertStatus(404)
+        assert.isNotNull(await Task.find(task.id))
+      })
+  }
 })

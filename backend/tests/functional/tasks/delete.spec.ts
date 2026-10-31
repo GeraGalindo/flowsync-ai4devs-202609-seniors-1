@@ -69,6 +69,21 @@ test.group('Tasks | borrar', (group) => {
     response.assertStatus(404)
   })
 
+  test('otra forma de escribir el identificador responde 404 y no borra: {$self}')
+    .with(['1.0', '1e0', '+1', '%201', '01abc'])
+    .run(async ({ client, assert }, alias) => {
+      const { user, token } = await cuentaConToken(client, 'ada@example.com')
+      const task = await Task.create({ title: 'Sigue', status: 'pending', assigneeId: user.id })
+      const escrito = alias.replace('1', String(task.id))
+
+      const response = await client
+        .delete(`/api/v1/tasks/${escrito}`)
+        .header('Authorization', `Bearer ${token}`)
+
+      response.assertStatus(404)
+      assert.isNotNull(await Task.find(task.id))
+    })
+
   test('un identificador no numérico responde 404', async ({ client }) => {
     const { token } = await cuentaConToken(client, 'ada@example.com')
 

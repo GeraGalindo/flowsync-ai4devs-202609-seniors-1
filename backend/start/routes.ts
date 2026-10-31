@@ -51,7 +51,9 @@ router
         router.get('/', [controllers.Tasks, 'index'])
         router.post('/', [controllers.Tasks, 'store'])
         router.get(':id', [controllers.Tasks, 'show'])
-        router.delete(':id', [controllers.Tasks, 'destroy'])
+        // Solo dígitos: SQLite convierte el texto al comparar con una columna
+        // entera, y `/tasks/1.0` o `/tasks/1e0` borrarían de verdad la tarea 1.
+        router.delete(':id', [controllers.Tasks, 'destroy']).where('id', router.matchers.number())
         router.patch(':id/status', [controllers.TaskStatuses, 'update'])
         router.put(':id/due-date', [controllers.TaskDueDates, 'update'])
       })

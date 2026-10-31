@@ -53,6 +53,9 @@ router
         router.get(':id', [controllers.Tasks, 'show'])
         router.patch(':id/status', [controllers.TaskStatuses, 'update'])
         router.put(':id/due-date', [controllers.TaskDueDates, 'update'])
+        // SQLite compara por afinidad numérica: sin el matcher, `1.0` o `1e0`
+        // encontrarían la tarea 1, y un borrado no tiene vuelta atrás.
+        router.delete(':id', [controllers.Tasks, 'destroy']).where('id', router.matchers.number())
       })
       .prefix('tasks')
       .as('tasks')

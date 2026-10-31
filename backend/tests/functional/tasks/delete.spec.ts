@@ -88,4 +88,20 @@ test.group('Tasks | borrado', (group) => {
     response.assertStatus(404)
     assert.isNotNull(await Task.find(tarea.id))
   })
+  test('una forma no canónica del identificador responde 404 y no borra nada', async ({
+    client,
+    assert,
+  }) => {
+    const { id: assigneeId, token } = await cuenta(client, 'ada@example.com')
+    const tarea = await Task.create({ title: 'Intacta', status: 'pending', assigneeId })
+
+    for (const id of [`${tarea.id}.0`, `${tarea.id}e0`, ` ${tarea.id}`]) {
+      const response = await client
+        .delete(`/api/v1/tasks/${encodeURIComponent(id)}`)
+        .header('Authorization', `Bearer ${token}`)
+
+      response.assertStatus(404)
+      assert.isNotNull(await Task.find(tarea.id))
+    }
+  })
 })

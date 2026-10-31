@@ -24,9 +24,11 @@ de `POST /api/v1/auth/login` o de `POST /api/v1/auth/signup`.
 | `GET /tasks/:id` | `today=AAAA-MM-DD` en query, **obligatorio** | [`TasksController.show`](../../../backend/app/controllers/tasks_controller.ts) | `200` · la tarea con vencimiento |
 | `PATCH /tasks/:id/status` | `{ "status": "pending \| in_progress \| done" }` | [`TaskStatusesController.update`](../../../backend/app/controllers/task_statuses_controller.ts) | `200` · la tarea ya cambiada |
 | `PUT /tasks/:id/due-date` | `{ "dueDate": "AAAA-MM-DD" \| null, "today": "AAAA-MM-DD" }` | [`TaskDueDatesController.update`](../../../backend/app/controllers/task_due_dates_controller.ts) | `200` · la tarea con vencimiento |
+| `DELETE /tasks/:id` | `id` de solo dígitos; otro valor da `404` | [`TasksController.destroy`](../../../backend/app/controllers/tasks_controller.ts) | `204` · sin cuerpo |
 
-Toda respuesta va envuelta en `{ "data": ... }` por el serializer de
-[`providers/api_provider.ts`](../../../backend/providers/api_provider.ts).
+Toda respuesta con contenido va envuelta en `{ "data": ... }` por el serializer de
+[`providers/api_provider.ts`](../../../backend/providers/api_provider.ts). El `204` de `DELETE` no
+lleva cuerpo.
 
 ### Dos formas de tarea, no una
 
@@ -58,10 +60,10 @@ recorta a `id`, `fullName` e `initials` — nunca el email.
 
 ### El contrato, servido
 
-Las cinco operaciones están anotadas con los decoradores de `@foadonis/openapi` sobre los propios
+Las seis operaciones están anotadas con los decoradores de `@foadonis/openapi` sobre los propios
 controladores, así que el documento servido en **`/api.json`** (y la interfaz en `/api`) lleva el
 parámetro `status` con sus tres valores, el `today` obligatorio, los cuerpos de las escrituras y los
-códigos `200`/`201`/`401`/`404`/`422` de cada operación, cada uno con la forma de lo que devuelve.
+códigos `200`/`201`/`204`/`401`/`404`/`422` de cada operación, cada uno con la forma de lo que devuelve.
 
 Las formas que se repiten viven en
 [`backend/app/openapi/schemas.ts`](../../../backend/app/openapi/schemas.ts) y se publican en
@@ -96,6 +98,7 @@ qué exige cada una, se abre el enlace de la derecha.
 | La lista no lleva vencimiento | Dos transformers separados, no uno con campos opcionales | [La lista no lleva el vencimiento](../../../openspec/specs/tasks/spec.md#requirement-la-lista-no-lleva-el-vencimiento) |
 | Acotar por estado | `listTasksValidator` y la rama de `TasksController.index` | [Acotar la lista por estado](../../../openspec/specs/tasks/spec.md#requirement-acotar-la-lista-por-estado) |
 | Filtro válido sin resultados ≠ filtro inválido | **Sin cumplir hoy.** `listTasksValidator` declara `status: vine.string().optional()`, no un `vine.enum`, así que un estado inventado no se rechaza: llega al `where` y sale como lista vacía, que es justo lo que el requisito prohíbe. El comentario de `TasksController.index` afirma lo contrario | [Un estado que no existe se rechaza, no se responde vacío](../../../openspec/specs/tasks/spec.md#requirement-un-estado-que-no-existe-se-rechaza-no-se-responde-vacío) |
+| Borrar una tarea, sin papelera ni permisos por responsable | `TasksController.destroy`, con `task.delete()`; el matcher de `start/routes.ts` corta los `id` que no son solo dígitos | **Sin requisito en la spec todavía.** El comportamiento sale de la historia [E2-10](../../backlog/E2-gestion-tareas/us-borrar-tarea.md), cuya confirmación explícita es de interfaz y sigue sin entregar: el borrado solo existe en la API |
 
 En el frontend, la capability vive en [`pages/tasks-page.tsx`](../../../frontend/src/pages/tasks-page.tsx),
 [`pages/task-page.tsx`](../../../frontend/src/pages/task-page.tsx),
@@ -125,10 +128,11 @@ node ace test --tests="el responsable llega con su nombre y sus iniciales"
 ```
 
 Los tests de esta capability están en
-[`backend/tests/functional/tasks/`](../../../backend/tests/functional/tasks/). **Hoy solo hay uno**,
-`assignee.spec.ts`, que cubre 3 de los 124 scenarios de la spec: los del requisito *Lo que cada tarea
-muestra de su responsable*. Todo lo demás está sin cubrir, así que el verde de la suite **no** es
-señal de que la capability cumpla su spec.
+[`backend/tests/functional/tasks/`](../../../backend/tests/functional/tasks/). **Hoy solo hay dos**:
+`assignee.spec.ts`, que cubre 3 de los 124 scenarios de la spec —los del requisito *Lo que cada tarea
+muestra de su responsable*—, y `delete.spec.ts`, que cubre `DELETE /tasks/:id`, todavía sin requisito
+en la spec. Todo lo demás está sin cubrir, así que el verde de la suite **no** es señal de que la
+capability cumpla su spec.
 
 Dos cosas que hay que saber antes de escribir un test aquí:
 
@@ -176,6 +180,9 @@ curl -s -X PATCH http://localhost:3333/api/v1/tasks/1/status \
 curl -s -X PUT http://localhost:3333/api/v1/tasks/1/due-date \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -d '{"dueDate":"2026-08-19","today":"2026-08-20"}'
+
+# 7. Borrar la tarea — 204 sin cuerpo, y repetirlo ya da 404
+curl -s -i -X DELETE http://localhost:3333/api/v1/tasks/1 -H "Authorization: Bearer $TOKEN"
 ```
 
 Ojo: esto **escribe en la base de datos de desarrollo**. Para dejarla como estaba, `node ace

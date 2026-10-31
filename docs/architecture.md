@@ -50,6 +50,7 @@ C4Container
   | GET | `/api/v1/tasks/:id` | `TasksController.show` | sí |
   | PATCH | `/api/v1/tasks/:id/status` | `TaskStatusesController.update` | sí |
   | PUT | `/api/v1/tasks/:id/due-date` | `TaskDueDatesController.update` | sí |
+  | DELETE | `/api/v1/tasks/:id` | `TasksController.destroy` | sí |
 
 - **Validadores** ([`backend/app/validators/`](../backend/app/validators/)) — VineJS 4 con
   `vine.create()`, consumidos con `request.validateUsing(...)`. `user.ts` cubre registro y

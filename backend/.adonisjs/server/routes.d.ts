@@ -16,6 +16,7 @@ export type ScannedRoutes = {
     'tasks.tasks.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'tasks.task_statuses.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'tasks.task_due_dates.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'tasks.tasks.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'openapi.html': { paramsTuple?: []; params?: {} }
@@ -44,6 +45,9 @@ export type ScannedRoutes = {
   }
   PUT: {
     'tasks.task_due_dates.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
+  DELETE: {
+    'tasks.tasks.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {
